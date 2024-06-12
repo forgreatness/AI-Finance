@@ -105,11 +105,20 @@ predictions['Target'].value_counts() / predictions.shape[0]
 horizons = [2,5,60,250,1000] #num representing day to calculate average the last 2, 5, 60, ....
 newPredictors = []
 
+########
+
+"""
+The purpose of the horizon is to feature engineer a couple more data for dataset with the idea of:
+lets provide it the average closing price of the last 5 days 60 days 250 and 4 years to see if it has been going up or down
+
+"""
+
+########
 for horizon in horizons:
     rollingAverages = sp500.rolling(horizon).mean()
     
     ratio_column = f"Close_Ratio_{horizon}"
-    sp500[ratio_column] = sp500["Close"] / rollingAverages["Close"]
+    sp500[ratio_column] = sp500["Close"] / rollingAverages["Close"] #give me a new column Close_Ratio_5 or Close_Ratio_250 I want the closing price / the average of the last 5 or 250 days
     
     trend_column = f"Trend_{horizon}"
     sp500[trend_column] = sp500.shift(1).rolling(horizon).sum()["Target"] #Create a new column call trend_5, trend_60 and calculate the window of 5 or 60 days 
