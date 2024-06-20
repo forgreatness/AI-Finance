@@ -65,5 +65,10 @@ model.add(LSTM(50, return_sequences=False))
 model.add(Dense(25))
 model.add(Dense(1))
 
-# model.compile(optimizer='adam', loss='mean_squared_error')
-# model.fit(x_train, y_train, batch_size=1, epochs=1)
+model.compile(optimizer='adam', loss='mean_squared_error')
+model.fit(x_train, y_train, batch_size=1, epochs=1)
+
+test_data = scaled_data[training_data_len - 60:, :]
+
+x_test = [] #for each datapoint in y_test, we need previous 60 price from that point we do this separately like above
+y_test = dataset[training_data_len:, :] #from 80% of originial data set until the end makes sense
