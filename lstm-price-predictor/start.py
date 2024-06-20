@@ -55,8 +55,8 @@ for i in range(60, len(train_data)):
         
 x_train, y_train = np.array(x_train), np.array(y_train) # this makes it so that x_train is now a 2d array
 
-#Reshape the data 
-x_train = np.reshape(x_train, (x_train.shape[0], x_train.shape[1], 1)) #this converts 2d array into 3d array
+#Reshape the data (number of cases, 60 time steps, and 1 feature (closing price))
+x_train = np.reshape(x_train, (x_train.shape[0], x_train.shape[1], 1)) #this converts 2d array into 3d array (which is 80% of rows from dataset, each row is 60 unit, and third dimension is 1)
 
 ####################### STEP #2 Model Creation ###############################
 model = Sequential()
@@ -65,5 +65,5 @@ model.add(LSTM(50, return_sequences=False))
 model.add(Dense(25))
 model.add(Dense(1))
 
-model.compile(optimizer='adam', loss='mean_squared_error')
-model.fit(x_train, y_train, batch_size=1, epochs=1)
+# model.compile(optimizer='adam', loss='mean_squared_error')
+# model.fit(x_train, y_train, batch_size=1, epochs=1)
