@@ -9,6 +9,7 @@ import yfinance as yf
 import numpy as np
 import pandas as pd
 import matplotlib.pyplot as plt #this library we know is using to plot data for visualization (matplotlib)
+from datetime import datetime
 from sklearn.preprocessing import MinMaxScaler
 from keras.models import Sequential
 from keras.layers import Dense, LSTM
@@ -68,7 +69,59 @@ model.add(Dense(1))
 model.compile(optimizer='adam', loss='mean_squared_error')
 model.fit(x_train, y_train, batch_size=1, epochs=1)
 
-test_data = scaled_data[training_data_len - 60:, :]
+test_data = scaled_data[training_data_len - 60:, :] # takes the scaled data which is closing price column with feature scaled using normalization (80% - 60) to the end
 
 x_test = [] #for each datapoint in y_test, we need previous 60 price from that point we do this separately like above
-y_test = dataset[training_data_len:, :] #from 80% of originial data set until the end makes sense
+y_test = dataset[training_data_len:, :] #from 80% of originial data set until the end makes sense (this takes the data from dataset which is not scaled and takes it straight from 80% to the end)
+
+
+for i in range (60, len(test_data)): #60 to the end of test_data meaning the first 60 of test_data is not really looped through
+    x_test.append(test_data[i-60:i, 0]) #append the last 60 value before i to be the value in x_test == [i-60:i, 0] 0 means first column
+
+x_test = np.array(x_test)
+x_test = np.reshape(x_test, (x_test.shape[0], x_test.shape[1], 1))
+
+predictions = model.predict(x_test)
+predictions = scaler.inverse_transform(predictions)
+
+# Compute RMSE for model evaluation (usually RMSE is a loss function)
+rmse = np.sqrt( np.mean( predictions - y_test )**2 )
+
+print('this is the RMSE: ', rmse)
+
+
+#Plot the results we have which is the ypreds comparing to the y_test
+train = data[:training_data_len]
+valid = data[training_data_len:]
+valid['Predictions'] = predictions
+#visualize these data
+plt.figure(figsize=(16,8))
+plt.title('Model')
+plt.xlabel('Date', fontsize=18)
+plt.ylabel('Close Price USD ($)', fontsize=18)
+plt.plot(train['Close'])
+plt.plot(valid[['Close', 'Predictions']])
+plt.legend(['Train', 'Val', 'Predictions'], loc='lower right')
+# plt.show()
+
+##############################  Get price for tesla the last 60 days input into model to get prediction and get the quote price for tesla tomorrow and compare actual quote price vs model pred ###################
+teslaEndDate = datetime.now().strftime('%Y-%m-%d')
+teslaStartDate = f'{datetime.now().year}-01-01'
+teslaData = yf.download('TSLA', start=teslaStartDate, end=teslaEndDate)
+
+teslaClose = teslaData.filter(['Close'])
+teslaClose = teslaClose[-60:].values #.values get us an array
+teslaCloseScaled = scaler.transform(teslaClose)
+teslaXTest = []
+teslaXTest.append(teslaCloseScaled)
+teslaXTest = np.array(teslaXTest)
+teslaXTest = np.reshape(teslaXTest, (teslaXTest.shape[0], teslaXTest.shape[1], 1))
+teslaTomorrowPrice = model.predict(teslaXTest)
+teslaTomorrowPrice = scaler.inverse_transform(teslaTomorrowPrice)
+
+# Download the most recent data for Tesla (TSLA)
+teslaMostRecentData = yf.download('TSLA', period='1d', interval='1d')
+
+# Get the closing price for the most recent day
+most_recent_close_price = teslaMostRecentData['Close'].iloc[0]
+print('TESLA predicted price vs actual closing price', teslaTomorrowPrice, most_recent_close_price)
