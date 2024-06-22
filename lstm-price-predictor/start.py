@@ -15,9 +15,13 @@ from keras.models import Sequential
 from keras.layers import Dense, LSTM
 plt.style.use('fivethirtyeight')
 
+todayDate = datetime.now().strftime('%Y-%m-%d')
+trainingStartDate = f'{datetime.now().year - 12}-01-01'
+trainingEndDate = f'{datetime.now().year}-01-01'
+
 try:
     # Fetch the data using yfinance
-    df = yf.download('AAPL', start='2012-01-01', end='2019-12-17')
+    df = yf.download('AAPL', start=trainingStartDate, end=trainingEndDate)
     print(df)
 except Exception as e:
     print(f"An error occurred: {e}")
@@ -104,24 +108,24 @@ plt.plot(valid[['Close', 'Predictions']])
 plt.legend(['Train', 'Val', 'Predictions'], loc='lower right')
 # plt.show()
 
-##############################  Get price for tesla the last 60 days input into model to get prediction and get the quote price for tesla tomorrow and compare actual quote price vs model pred ###################
-teslaEndDate = datetime.now().strftime('%Y-%m-%d')
-teslaStartDate = f'{datetime.now().year}-01-01'
-teslaData = yf.download('TSLA', start=teslaStartDate, end=teslaEndDate)
+##############################  Get price for Apple the last 60 days input into model to get prediction and get the quote price for apple tomorrow and compare actual quote price vs model pred ###################
+appleEndDate = datetime.now().strftime('%Y-%m-%d')
+appleStartDate = f'{datetime.now().year}-01-01'
+appleData = yf.download('AAPL', start=appleStartDate, end=appleEndDate)
 
-teslaClose = teslaData.filter(['Close'])
-teslaClose = teslaClose[-60:].values #.values get us an array
-teslaCloseScaled = scaler.transform(teslaClose)
-teslaXTest = []
-teslaXTest.append(teslaCloseScaled)
-teslaXTest = np.array(teslaXTest)
-teslaXTest = np.reshape(teslaXTest, (teslaXTest.shape[0], teslaXTest.shape[1], 1))
-teslaTomorrowPrice = model.predict(teslaXTest)
-teslaTomorrowPrice = scaler.inverse_transform(teslaTomorrowPrice)
+appleClose = appleData.filter(['Close'])
+appleClose = appleClose[-60:].values #.values get us an array
+appleCloseScaled = scaler.transform(appleClose)
+appleXTest = []
+appleXTest.append(appleCloseScaled)
+appleXTest = np.array(appleXTest)
+appleXTest = np.reshape(appleXTest, (appleXTest.shape[0], appleXTest.shape[1], 1))
+appleTomorrowPrice = model.predict(appleXTest)
+appleTomorrowPrice = scaler.inverse_transform(appleTomorrowPrice)
 
-# Download the most recent data for Tesla (TSLA)
-teslaMostRecentData = yf.download('TSLA', period='1d', interval='1d')
+# Download the most recent data for Apple (AAPL)
+appleMostRecentData = yf.download('AAPL', period='1d', interval='1d')
 
 # Get the closing price for the most recent day
-most_recent_close_price = teslaMostRecentData['Close'].iloc[0]
-print('TESLA predicted price vs actual closing price', teslaTomorrowPrice, most_recent_close_price)
+most_recent_close_price = appleMostRecentData['Close'].iloc[0]
+print('APPLE predicted price vs actual closing price', appleTomorrowPrice, most_recent_close_price)
