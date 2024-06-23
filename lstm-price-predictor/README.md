@@ -1,3 +1,3 @@
 ## Overview
 After working on the LSTM model, some insights that can be derived are that since model is train on a specific sequence of price from APPLE, its important to only used the model to predict apple prices.
-For that reason we would train on apple price, then query the last 60 days of apple price as input into the model and ask the model to predict apple price for tomorrow from those last 60 day prices. This is the only way we can get decent prediction.
+For that reason we would train on apple price, then query the last 60 days of apple price as input into the model and ask the model to predict apple price for tomorrow from those last 60 day prices. This is the only way we can get decent prediction. 
