@@ -17,7 +17,7 @@ from dateutil.relativedelta import relativedelta
 stockDataFileName = 'jpm-stock-data.csv'
 ticker = 'jpm'
 todayDate = datetime.now()
-dataStartDate = todayDate - relativedelta(years=10)
+dataStartDate = todayDate - relativedelta(years=12)
 
 if os.path.exists(stockDataFileName):
     stockData = pd.read_csv(stockDataFileName, index_col=0, parse_dates=True)
@@ -45,6 +45,8 @@ processedStockData = processedStockData.dropna()
 processedStockData['Signal'] = 0.0
 processedStockData.loc[(processedStockData['Actual Returns'] >= 0), 'Signal'] = 1
 processedStockData.loc[(processedStockData['Actual Returns'] < 0), 'Signal'] = -1
+
+print('processedStockData["Signal"].value_count()', processedStockData['Signal'].value_counts())
 
 # Actual Returns is whether today price was higher than yesterday in percentage (+/-)
 # Signal is whether today price was higher than yesterday in (true false (1/0))
@@ -100,4 +102,29 @@ plt.plot(predictionsDF.index, (1 + predictionsDF[['Actual Returns', 'Strategy Re
 plt.show()
 
 
+# Phase #2: Improving the model using different SMA window and different training window
+"""
+In phase one we train the model using sma value of 50 and sma value of 200.
+Then in phase 2 we will try a different sma value base on our theories to see if the performance of the model would improve.
 
+How did the sma 50 and the sma 200 help predict the model:
+The sma50 is a value using the rollingwindow to find the mean of the last 50 closing price, this along with sma 200 is use to predict a colume call Signal (1 for up, -1 for going down)
+Using the predicted value, the strategy return will be the day actual return (today closing price / yesterday closing) times * by the predicted signal. If its a negative signal and it actually predicted it.
+Then the actual return is positive. since we sold before it went down.
+"""
+
+# Trying an sma that was not only 50 but now we will do sma 20 and sma400
+smallMomentumWindow = 20
+largeEconomicShiftWindow = 400
+
+processedStockData['SMA_mini'] = processedStockData['Close'].rolling(window=smallMomentumWindow).mean()
+processedStockData['SMA_sizemic'] = processedStockData['Close'].rolling(window=largeEconomicShiftWindow).mean()
+
+shifted_data = processedStockData[['SMA_mini', 'SMA_sizemic']].shift()
+shifted_data.dropna(subset=['SMA_mini', 'SMA_sizemic'], inplace=True)
+processedStockData[['SMA_mini', 'SMA_sizemic']] = shifted_data
+processedStockData.dropna(inplace=True)
+
+print('this is the processedStockData \n', processedStockData)
+
+# Next step once we have it is to train the model by fitting
