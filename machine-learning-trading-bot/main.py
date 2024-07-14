@@ -7,6 +7,7 @@ from sklearn import svm
 from sklearn.preprocessing import StandardScaler
 from pandas.tseries.offsets import DateOffset
 from sklearn.metrics import classification_report
+from sklearn.neural_network import MLPClassifier
 import yfinance as yf
 from datetime import datetime, timedelta
 from dateutil.relativedelta import relativedelta
@@ -243,6 +244,8 @@ predictionsDF['Cumulative Strategy Returns 5'] = (1 + predictionsDF['Strategy Re
 predictionsDF['Cumulative Strategy Returns 9'] = (1 + predictionsDF['Strategy Returns9']).cumprod()
 predictionsDF['Cumulative Strategy Returns 11'] = (1 + predictionsDF['Strategy Returns11']).cumprod()
 
+print('this is the predictionDF', predictionsDF)
+
 plt.plot(predictionsDF['Cumulative Strategy Returns 4'], label='Cumulative Strategy Returns 4', color='pink')
 plt.plot(predictionsDF['Cumulative Strategy Returns 5'], label='Cumulative Strategy Returns 5', color='yellow')
 plt.plot(predictionsDF['Cumulative Strategy Returns 9'], label='Cumulative Strategy Returns 9', color='orange')
@@ -250,5 +253,35 @@ plt.plot(predictionsDF['Cumulative Strategy Returns 11'], label='Cumulative Stra
 plt.legend()
 plt.show()
 
+"""
+# Phase 3: In this phase, the purpose will be to try different model type on the data to see the performance
+"""
 
-print('this is the predictionDF', predictionsDF)
+nnCLF = MLPClassifier(alpha=1e-5, max_iter=1000, hidden_layer_sizes=(8, 4), random_state=42)
+nnCLF.fit(x_train_scaled, y_train)
+nnCLFYPred = nnCLF.predict(x_test_scaled)
+print(nnCLFYPred)
+
+nnCLFTestingReport = classification_report(y_test, nnCLFYPred)
+# print(nnCLFTestingReport)
+
+
+# Create a predictions DataFrame
+MLP_predictions_df = pd.DataFrame(index = x_test.index)
+
+# Add the model predictions to the DataFrame
+MLP_predictions_df['Predicted'] = nnCLFYPred
+
+# Add the actual returns to the DataFrame
+MLP_predictions_df['Actual Returns'] = processedStockData['Actual Returns']
+
+# Add the strategy returns to the DataFrame
+MLP_predictions_df['Strategy Returns'] = MLP_predictions_df['Actual Returns'] * MLP_predictions_df['Predicted']
+MLP_predictions_df['Cumulative Strategy'] = (1 + MLP_predictions_df['Strategy Returns']).cumprod()
+MLP_predictions_df['Cumulative Actual'] = (1 + MLP_predictions_df['Actual Returns']).cumprod()
+
+# Review the DataFrame
+plt.plot(MLP_predictions_df['Cumulative Actual'], label='Cumulative Actual Returns', color='orange')
+plt.plot(MLP_predictions_df['Cumulative Strategy'], label='Cumulative Strategy Returns', color='blue')
+plt.legend()
+plt.show()
