@@ -14,3 +14,12 @@ plot the value of strategy returns using cumulative return to plot the return of
 - Create 2 time frame trainingbegin and trainingend 
 - Filter x using the timeframe store value in x_train, filter y as well in y_train
 do same for x_test and y_test
+
+
+### Phase 2: Tuning baseline algorithm
+For this specific section, it will display the results of feature engineering 1 additional SMA and also testing SVM model on more training data or less training data. Additionally, there are many things which can be done with data preprocessing such as data augmentation which makes data available for each class equally using smote, removing outliers
+
+Below we will see the results of running different svm model with sma20, sma50, and sma200 on 4 different types of training window of 4 months, 5, 9, and 11 months.
+
+We can see that 4 months, 11 months, and regular strategy returns of 6 months gave best results
+![Phase 2 Results](/images/Phase2Results.png)
