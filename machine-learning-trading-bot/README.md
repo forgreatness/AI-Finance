@@ -22,4 +22,4 @@ For this specific section, it will display the results of feature engineering 1 
 Below we will see the results of running different svm model with sma20, sma50, and sma200 on 4 different types of training window of 4 months, 5, 9, and 11 months.
 
 We can see that 4 months, 11 months, and regular strategy returns of 6 months gave best results
-![Phase 2 Results](/images/Phase2Results.png)
+![Phase 2 Results](images/Phase2Results.png)
